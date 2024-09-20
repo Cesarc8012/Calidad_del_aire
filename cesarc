@@ -1,0 +1,45 @@
+pip install sodapy
+
+import os
+import altair as alt
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+import pyodbc
+import warnings
+import sqlite3
+
+try:
+    df_resultados_calidad_aire = pd.read_json('https://www.datos.gov.co/resource/ysq6-ri4e.json')
+    print("El dataset se cargó exitosamente.")
+except FileNotFoundError as e:
+    print(f"Error: El archivo no se pudo encontrar. Detalles: {e}")
+except Exception as e:
+    print(f"Error inesperado: {e}")
+
+  from sodapy import Socrata
+
+# Crea una instancia de la clase Socrata con dos argumentos:
+    # 1: "www.datos.gov.co": Es la URL del portal de datos de Colombia (www.datos.gov.co) al que se quiere conectar.
+    # 2: None: Este argumento es utilizado para especificar un token de acceso a la API si se requiere autenticación,
+        # pero en este caso se pasa como None, lo que significa que no se está usando autenticación para acceder a los datos.
+client = Socrata("www.datos.gov.co", None)
+
+# Utiliza el método get del objeto client para hacer una solicitud a la API de Socrata.
+results = client.get("ysq6-ri4e", select="fecha, departamento, nombre_del_municipio, variable, unidades, concentraci_n", limit=2000000)
+
+# Convierte los resultados obtenidos de la API, que están en formato de lista de diccionarios, en un DataFrame de pandas.
+results_df = pd.DataFrame.from_records(results)
+
+results_df
+
+results_df.info()
+
+results_df['fecha'] = pd.to_datetime(results_df['fecha'], errors='coerce')
+
+results_df
+
+results_df['fecha'] = results_df['fecha'].dt.strftime('%Y-%m-%d')
+
+results_df
